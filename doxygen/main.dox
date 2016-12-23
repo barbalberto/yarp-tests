@@ -1,0 +1,23 @@
+/**
+@mainpage YARP-tests main page
+
+The `yarp-tests` repository contains tests for the YARP middleware. Tests are written using the Robot Testing Framework (RTF).
+See https://github.com/robotology/robot-testing for how to use RTF.
+
+\li Getting started: \ref installation
+\li Getting started: \ref writing-and-running
+\li List of tests: \ref yarp-tests
+
+\section contributors Contributors
+
+\li Ali Paikan
+\li Lorenzo Natale
+\li Alberto Cardellino
+\li Daniele E. Domenichelli
+\li Silvio Traversaro
+\li Alessandro Scalzo
+\li Marco Randazzo
+\li Valentina Gaggero
+\li Ugo Pattacini
+
+**/
