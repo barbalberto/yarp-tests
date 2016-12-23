@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<suit name="libYARP_OS Tests Suite">
+    <description>   Testing YARP OS basic features </description>
+
+	<!-- Set parameters valid for all tests -->
+ 	<!--    <environment> --robotname icubSim </environment>  -->
+
+	<!-- Launch fixtures -->
+	<!--    <fixture param="--fixture icubsim-fixture.xml"> yarpmanager </fixture>  -->
+
+    <!-- Run tests -->
+	<!-- 
+    <test type="dll" param="--from camera_right.ini"> CameraTest </test>
+    <test type="dll" param="--from camera_left.ini"> CameraTest </test> 
+	-->
+
+</suit>
+
