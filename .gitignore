@@ -27,3 +27,16 @@
 *.exe
 *.out
 *.app
+
+# build folders
+*~
+/build*/
+
+
+# Project files
+*kdev*
+CMakeLists.txt.user
+
+# Git conflict files
+*.orig
+

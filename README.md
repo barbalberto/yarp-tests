@@ -1,2 +1,5 @@
-# yarp-tests
-Collection of tests on YARP middleware using RTF framework
+# YARP tests
+
+Collection of YARP middleware tests built using RTF framework
+
+
