@@ -26,12 +26,63 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 
+bool openMotionControl = true;
 int nJoints;
 void testPositionControl(IPositionControl2   *pos);
 void testPositionDirect(IPositionDirect      *posDir);
 void testVelocityControl2(IVelocityControl2  *vel2);
 void testAmplifierControl(IAmplifierControl  *amp);
+void testCurrentControl(ICurrentControl  *icurr);
+void testPWMControl(IPWMControl *iPwm);
 
+class FakeMotionControl
+{
+    PolyDriverList motionControllerList;
+    PolyDriver motionController;
+    Property controllerconfig;
+    PolyDriver wrapper;
+    Property  wrapperconfig;
+    IMultipleWrapper* iWrap;
+
+    public:
+    FakeMotionControl()
+    {
+        iWrap = 0;
+    }
+
+    bool open()
+    {
+        const char *inifile1 = "device fakeMotionControl\n"
+            "name fake\n"
+            "[GENERAL]\n"
+            "Joints 2\n"
+            "\n"
+            "AxisName \"axisA1\" \"axisA2\" \n";
+        controllerconfig.fromConfig(inifile1);
+        if (!motionController.open(controllerconfig)) return false;
+        yarp::dev::PolyDriverDescriptor pol;
+        pol.key = "fake";
+        pol.poly = &motionController;
+        motionControllerList.push(pol);
+
+        yarp::os::Time::delay(1.0);
+
+        const char *inifile2 = "device controlboardwrapper2\n"
+            "period 10\n"
+            "name /fakeMotionControl/fake\n"
+            "joints 2\n"
+            "networks ( fake )\n"
+            "fake  (0 1 0 1)\n";
+        wrapperconfig.fromConfig(inifile2);
+        if (!wrapper.open(wrapperconfig)) return false;
+        yarp::os::Time::delay(1.0);
+
+        if (!wrapper.view(iWrap)) return false;
+        if (!iWrap->attachAll(motionControllerList)) return false;
+
+        return true;
+    }
+};
 
 /***********************************************/
 int main(int argc, char *argv[])
@@ -39,37 +90,47 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
         return -1;
+    
+    FakeMotionControl fakecontrol;
+    if (openMotionControl)
+    {
+        fakecontrol.open();
+    }
 
     bool second = false;
     std::string  prefix;
     int start = 0;
-    PolyDriver remote;
-    Property config;
-
-    config.put("device", "remote_controlboard");
-    config.put("remote", "/fakeMotionControl");
-    config.put("local",  "/testMotionControlInterface_YARP");
+    PolyDriver client;
+    Property clientconfig;
+    
+    clientconfig.put("device", "remote_controlboard");
+    clientconfig.put("remote", "/fakeMotionControl/fake");
+    clientconfig.put("local", "/testMotionControlInterface_YARP/fake");
 //     config.put("writeStrict", "on");
-    remote.open(config);
+    client.open(clientconfig);
 
-    IAmplifierControl *amp;
-    IPositionControl2 *pos;
-    IPositionDirect   *posDir;
-    IVelocityControl  *vel;
-    IVelocityControl2 *vel2;
-    IPidControl       *pid;
-    IControlMode2     *mode;
-    IInteractionMode  *inter;
+    IAmplifierControl *amp = 0;
+    IPositionControl2 *pos = 0;
+    IPositionDirect   *posDir = 0;
+    IVelocityControl  *vel = 0;
+    IVelocityControl2 *vel2 = 0;
+    IPidControl       *pid = 0;
+    IControlMode2     *mode = 0;
+    IInteractionMode  *inter = 0;
+    IPWMControl       *ipwm = 0;
+    ICurrentControl   *icurr = 0;
 
-    remote.view(amp);
-    remote.view(pos);
-    remote.view(posDir);
-    remote.view(pid);
-    remote.view(mode);
-    remote.view(inter);
-    remote.view(vel2);
+    client.view(amp);
+    client.view(pos);
+    client.view(posDir);
+    client.view(pid);
+    client.view(mode);
+    client.view(inter);
+    client.view(vel2);
+    client.view(ipwm);
+    client.view(icurr);
 
-    if(!amp || !pos || !posDir || !pid || !mode || !inter || !vel2)
+    if(!amp || !pos || !posDir || !pid || !mode || !inter || !vel2 || !ipwm || !icurr)
     {
         yError() << "Not valid interfaces found!!";
         return false;
@@ -79,7 +140,9 @@ int main(int argc, char *argv[])
 //     testPositionControl(pos);
 //     testPositionDirect(posDir);
 //     testVelocityControl2(vel2);
-    testAmplifierControl(amp);
+//     testAmplifierControl(amp);
+    testPWMControl(ipwm);
+    testCurrentControl(icurr);
     return 0;
 }
 
@@ -548,5 +611,74 @@ void testAmplifierControl(IAmplifierControl* amp)
         yInfo() << "TEST OK";
     else
         yError() << "TEST FAILED";
+}
+
+void testPWMControl(IPWMControl* ipwm)
+{
+    bool tot_ok = true;
+    bool fail = true;
+    yarp::sig::Vector refs, reads;
+    double* reads2=0;
+    reads2 = new double[nJoints];
+
+    refs.resize(nJoints);
+    reads.resize(nJoints);
+
+    /*************************************************************************/
+    for (int i = 0; i<nJoints; i++)
+    {
+        ipwm->getDutyCycle(i, &reads[i]);
+    }
+    std::cout << "Duty cycles: " << reads.toString() << std::endl;
+
+    /*************************************************************************/
+    ipwm->getDutyCycles(reads2);
+    std::cout << "Duty cycles: " << yarp::sig::Vector(nJoints,reads2).toString() << std::endl;
+
+    /*************************************************************************/
+    for (int i = 0; i<nJoints; i++)
+    {
+        refs[i] = i * 100 + 10;
+        ipwm->setRefDutyCycle(i, refs[i]);
+        yarp::os::Time::delay(0.1);
+        ipwm->getRefDutyCycle(i, &reads[i]);
+
+        if (reads[i] != refs[i]) tot_ok = false;
+    }
+
+    /*************************************************************************/
+    for (int i = 0; i < nJoints; i++)
+    {
+        refs[i] = i * 100 + 15;
+    }
+    ipwm->setRefDutyCycles(refs.data());
+    yarp::os::Time::delay(0.1);
+    ipwm->getRefDutyCycles(reads2);
+    for (int i = 0; i < nJoints; i++)
+    {
+        if (reads2[i] != refs[i]) tot_ok = false;
+    }
+    
+    /*************************************************************************/
+    for (int i = 0; i<nJoints; i++)
+    {
+        ipwm->getDutyCycle(i, &reads[i]);
+    }
+    std::cout << "Duty cycles: " << reads.toString() << std::endl;
+
+    /*************************************************************************/
+    ipwm->getDutyCycles(reads2);
+    std::cout << "Duty cycles: " << yarp::sig::Vector(nJoints, reads2).toString() << std::endl;
+
+    /*************************************************************************/
+    if (tot_ok)
+        yInfo() << "TEST OK";
+    else
+        yError() << "TEST FAILED";
+}
+
+void testCurrentControl(ICurrentControl* icurr)
+{
+  
 }
 
