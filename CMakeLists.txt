@@ -28,6 +28,7 @@ option(ENABLE_BROKEN_TESTS   "Turn on to compile known broken tests" OFF)
 
 # Build main tests
 add_subdirectory(src)
+add_subdirectory(noRTF)
 
 # Build examples: skeleton of tipical YARP test to be used when writing new tests
 add_subdirectory(example/cpp)
