@@ -1,1 +1,2 @@
 add_subdirectory(testMotionControlInterfaces)
+add_subdirectory(clock)
