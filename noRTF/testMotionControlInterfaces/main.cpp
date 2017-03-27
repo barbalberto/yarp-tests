@@ -618,8 +618,7 @@ void testPWMControl(IPWMControl* ipwm)
     bool tot_ok = true;
     bool fail = true;
     yarp::sig::Vector refs, reads;
-    double* reads2=0;
-    reads2 = new double[nJoints];
+    double reads2[2] = { 0, 0 };
 
     refs.resize(nJoints);
     reads.resize(nJoints);
@@ -677,8 +676,167 @@ void testPWMControl(IPWMControl* ipwm)
         yError() << "TEST FAILED";
 }
 
+bool not_equal(double a, double b)
+{
+    if (fabs(a - b) < 1e-10) return false;
+    return true;
+}
+
 void testCurrentControl(ICurrentControl* icurr)
 {
-  
+    bool tot_ok = true;
+    bool fail = true;
+
+    Pid currPid1(1, 2, 3, 4, 5, 6);
+    Pid currPid2(10, 20, 30, 40, 50, 60);
+    Pid currPids[2];
+    currPids[0] = currPid1;
+    currPids[1] = currPid2;
+    Pid readPid1;
+    Pid readPids [2];
+    int axes = 0;
+
+    icurr->disableCurrentPid(0);
+    yarp::os::Time::delay(0.1);
+    icurr->enableCurrentPid(1);
+    yarp::os::Time::delay(0.1);
+    icurr->getAxes(&axes);
+    yarp::os::Time::delay(0.1);
+    icurr->resetCurrentPid(0);
+    yarp::os::Time::delay(0.1);
+
+    icurr->setCurrentPid(0, currPid1);
+    yarp::os::Time::delay(0.1);
+    icurr->getCurrentPid(0, &readPid1);
+    yarp::os::Time::delay(0.1);
+    if (!(readPid1 == currPid1))
+    {
+        yError() << "set/getCurrentPid";
+        tot_ok = false;
+    }
+
+    icurr->setCurrentPids(currPids);
+    yarp::os::Time::delay(0.1);
+    icurr->getCurrentPids((Pid*)(&readPids));
+    yarp::os::Time::delay(0.1);
+    if (!(readPids[0] == currPids[0]) ||
+        !(readPids[1] == currPids[1]))
+    {
+        yError() << "set/getCurrentPid";
+        tot_ok = false;
+    }
+
+    /*************************************************************************/
+    double refcurr = 3, refcurr_read = 0;
+    double curr_read = 0, curr_read_ok = 1.5;
+
+    icurr->setRefCurrent(0, refcurr);
+    yarp::os::Time::delay(0.1);
+    icurr->getRefCurrent(0, &refcurr_read);
+    yarp::os::Time::delay(0.1);
+    icurr->getCurrent(0, &curr_read);
+    yarp::os::Time::delay(0.1);
+    if (not_equal(refcurr_read , refcurr) ||
+        not_equal(curr_read , curr_read_ok))
+    {
+        yError() << "set/getRefCurrent";
+        tot_ok = false;
+    }
+
+    /*************************************************************************/
+    double refcurrs[2] = { 2, 4 }, refcurrs_read[2] = { 0, 0 };
+    double currs_read[2] = { 0, 0 }, currs_read_ok[2] = { 1, 2 };
+
+    icurr->setRefCurrents(refcurrs);
+    yarp::os::Time::delay(0.1); 
+    icurr->getRefCurrents(refcurrs_read);
+    yarp::os::Time::delay(0.1); 
+    icurr->getCurrents(currs_read);
+    yarp::os::Time::delay(0.1);
+    if (not_equal(refcurrs_read[0] , refcurrs[0]) ||
+        not_equal(refcurrs_read[1] , refcurrs[1]) ||
+        not_equal(currs_read[0] , currs_read_ok[0]) ||
+        not_equal(currs_read[1] , currs_read_ok[1]))
+    {
+        yError() << "set/getRefCurrents";
+        tot_ok = false;
+    }
+
+    /*************************************************************************/
+    double curr_err = 0;
+    double curr_err_ok = 1;
+    double currs_err[2] = { 0 , 0 };
+    double currs_err_ok[2] = { 1, 2 };
+
+    double curr_out = 0;
+    double curr_out_ok = 20;
+    double currs_out[2] = { 0 , 0 };
+    double currs_out_ok[2] = { 20, 40 };
+
+    icurr->getCurrentError(0, &curr_err);
+    if (not_equal(curr_err , curr_err_ok))
+    {
+        yError() << "getCurrentError";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+
+    icurr->getCurrentErrors(currs_err);
+    if (not_equal(currs_err[0] , currs_err_ok[0]) ||
+        not_equal(currs_err[1] , currs_err_ok[1]))
+    {
+        yError() << "getCurrentErrors";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+    
+    icurr->getCurrentPidOutput(0, &curr_out);
+    if (not_equal(curr_out , curr_out_ok))
+    {
+        yError() << "getCurrentPidOutput";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+    
+    icurr->getCurrentPidOutputs(currs_out);
+    if (not_equal(currs_out[0] , currs_out_ok[0]) ||
+        not_equal(currs_out[1] , currs_out_ok[1]))
+    {
+        yError() << "getCurrentPidOutputs";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+
+    /*************************************************************************/
+    double curr_min = 0, curr_max = 0;
+    double curr_min_ok = 0.02, curr_max_ok= 200;
+    double currs_min[2] = { 0, 0 }, currs_max[2] = { 0, 0 };
+    double currs_min_ok[2] = { 0.02, 0.04 }, currs_max_ok[2] = { 200, 400 };
+
+    icurr->getCurrentRange(0, &curr_min, &curr_max);
+    if (not_equal(curr_min , curr_min_ok) ||
+        not_equal(curr_max , curr_max_ok))
+    {
+        yError() << "getCurrentRange";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+
+    icurr->getCurrentRanges(currs_min, currs_max);
+    if (not_equal(currs_min[0], currs_min_ok[0]) ||
+        not_equal(currs_max[0], currs_max_ok[0]) ||
+        not_equal(currs_min[1], currs_min_ok[1]) ||
+        not_equal(currs_max[1], currs_max_ok[1]))
+    {
+        yError() << "getCurrentRanges";
+        tot_ok = false;
+    }
+    yarp::os::Time::delay(0.1);
+
+    /*************************************************************************/
+    if (tot_ok)
+        yInfo() << "TEST OK";
+    else
+        yError() << "TEST FAILED";
 }
 
