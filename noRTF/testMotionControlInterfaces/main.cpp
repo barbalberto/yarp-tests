@@ -700,7 +700,12 @@ void testCurrentControl(ICurrentControl* icurr)
     yarp::os::Time::delay(0.1);
     icurr->enableCurrentPid(1);
     yarp::os::Time::delay(0.1);
-    icurr->getAxes(&axes);
+    icurr->getNumberOfMotors(&axes);
+    if (axes != 2)
+    {
+        yError() << "getNumberOfMotors";
+        tot_ok = false;
+    }
     yarp::os::Time::delay(0.1);
     icurr->resetCurrentPid(0);
     yarp::os::Time::delay(0.1);
