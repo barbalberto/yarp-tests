@@ -9,3 +9,13 @@
 #
 
 message(STATUS " No libYARP_OS tests yet ... please populate this category!")
+project(libYARP_OS_test)
+
+include_directories(${CMAKE_SOURCE_DIR}
+                    ${RTF_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS}
+                    ${YARP_HELPERS_INCLUDE_DIR})
+
+
+add_subdirectory(clock_helpers)
+
