@@ -1,52 +1,45 @@
-// -*- mode:C++ { } tab-width:4 { } c-basic-offset:4 { } indent-tabs-mode:nil -*-
-
 /*
- * Copyright (C) 2015 iCub Facility
- * Authors: Ali Paikan
+ * Copyright (C) 2017 iCub Facility
+ * Authors: Alberto Cardellino
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- *
  */
 
-#ifndef _CAMERATEST_H_
-#define _CAMERATEST_H_
+#ifndef _YARP_CLOCK_TEST_H
+#define _YARP_CLOCK_TEST_H
 
 #include <string>
-#include <rtf/yarp/YarpTestCase.h>
-#include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Image.h>
+#include <yarp/os/BufferedPort.h>
+#include <rtf/yarp/YarpTestCase.h>
 
 
 /**
-* \ingroup icub-tests
-* Check if a camera is publishing images at desired framerate.
+* \ingroup yarp-tests
+* Check if the clock is working as expected
 *
 *  Accepts the following parameters:
 * | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
 * |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
-* | name           | string | -     | "CameraTest" | No       | The name of the test. | -     |
-* | portname       | string | -     | -             | Yes      | The yarp port name of the camera to test. | - |
-* | measure_time   | int    |  s  | 1             | No      | The duration of the test. |  |
-* | expected_frequency | int    |  Hz  | 30           | No      | The expected framerate of the camera. |  |
-* | tolerance      | int    | Number of frames | 5    | No     | The tolerance on the total number of frames read during the period (expected_frequency*measure_time) to consider the test sucessful. |  |
+* | blablabla      | string | -     | "BlaBlaBla  " | Obviously|  Nonsense   | -     |
 *
 */
-class CameraTest : public YarpTestCase {
+class ClockTest : public YarpTestCase
+{
 public:
-    CameraTest();
-    virtual ~CameraTest();
+    ClockTest();
+    virtual ~ClockTest();
 
+    // Test interface
     virtual bool setup(yarp::os::Property& property);
-
     virtual void tearDown();
-
     virtual void run();
 
 private:
-    std::string cameraPortName;
+    std::string clockPortName;
     int measure_time;
     int expected_frequency;
     int tolerance;
     yarp::os::BufferedPort<yarp::sig::Image> port;
 };
 
-#endif //_CAMERATEST_H
+#endif //_YARP_CLOCK_TEST_H

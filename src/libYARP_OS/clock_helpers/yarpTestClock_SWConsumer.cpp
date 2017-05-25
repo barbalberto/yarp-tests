@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     yarp::os::SystemClock::delaySystem(delay);
 
     yInfo() << "\n\t Creating network clock";
-    yarp::os::Time::useNetworkClock("/clock", "/clock_SW_cons_1");
+    yarp::os::Time::useNetworkClock("/clock");
 
     yInfo() << "\n\t After check network Clock, before creating rateThread()";
     YarpClock_SWConsumer_Thread thread;
