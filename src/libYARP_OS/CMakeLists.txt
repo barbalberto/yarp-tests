@@ -8,4 +8,3 @@
 # Add here YARP_OS tests
 #
 
-message(STATUS " No libYARP_OS tests yet ... please populate this category!")
