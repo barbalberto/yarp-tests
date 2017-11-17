@@ -33,6 +33,7 @@ void testPositionDirect(IPositionDirect      *posDir);
 void testVelocityControl2(IVelocityControl2  *vel2);
 void testAmplifierControl(IAmplifierControl  *amp);
 void testCurrentControl(ICurrentControl  *icurr);
+void testTimeStamp(IEncodersTimed            *encs);
 void testPWMControl(IPWMControl *iPwm);
 
 class FakeMotionControl
@@ -118,6 +119,7 @@ int main(int argc, char *argv[])
     IControlMode2     *mode = 0;
     IInteractionMode  *inter = 0;
     IPWMControl       *ipwm = 0;
+    IEncodersTimed    *encs;
     ICurrentControl   *icurr = 0;
 
     client.view(amp);
@@ -128,15 +130,18 @@ int main(int argc, char *argv[])
     client.view(inter);
     client.view(vel2);
     client.view(ipwm);
+    remote.view(encs);
     client.view(icurr);
 
-    if(!amp || !pos || !posDir || !pid || !mode || !inter || !vel2 || !ipwm || !icurr)
+    if(!amp || !pos || !posDir || !pid || !mode || !inter || !vel2 || !ipwm || !icurr || !encs)
     {
         yError() << "Not valid interfaces found!!";
         return false;
     }
 
     pos->getAxes(&nJoints);
+    testTimeStamp(encs);
+
 //     testPositionControl(pos);
 //     testPositionDirect(posDir);
 //     testVelocityControl2(vel2);
@@ -144,6 +149,17 @@ int main(int argc, char *argv[])
     testPWMControl(ipwm);
     testCurrentControl(icurr);
     return 0;
+}
+
+void testTimeStamp(IEncodersTimed            *encs)
+{
+    double enc, time;
+    for(int i=0; i<100; i++)
+    {
+        encs->getEncoderTimed(0, &enc, &time);
+        printf("Time is %.12f\n", time); fflush(stdout);
+        yarp::os::SystemClock::delaySystem(0.05);
+    }
 }
 
 void testPositionControl(IPositionControl2 *pos)
