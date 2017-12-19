@@ -10,6 +10,9 @@
 
 project(noRTF_libYARP_OS_test)
 
+option(ENABLE_CROP "bla bla bla"  false)
+
+if(ENABLE_CROP)
 include_directories(${CMAKE_SOURCE_DIR}
                     ${RTF_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
@@ -20,6 +23,6 @@ add_executable       (FrameGrabberCrop_client   FrameGrabberCrop_client.cpp)
 
 target_link_libraries(FrameGrabberCrop_server   ${YARP_LIBRARIES})
 target_link_libraries(FrameGrabberCrop_client   ${YARP_LIBRARIES})
-
+endif(ENABLE_CROP)
 
 
