@@ -17,8 +17,11 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 add_executable       (envelopeProducer    envelopeProducer.cpp)
 add_executable       (envelopeConsumer    envelopeConsumer.cpp)
+add_executable       (wtf                 wtf.cpp)
+
 
 target_link_libraries(envelopeProducer    ${YARP_LIBRARIES})
 target_link_libraries(envelopeConsumer    ${YARP_LIBRARIES})
+target_link_libraries(wtf                 ${YARP_LIBRARIES})
 
 
