@@ -18,62 +18,104 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/PortablePair.h>
+
+#include <yarp/os/impl/PortCommand.h>  // funzionera??
 
 #include <yarp/dev/all.h>
+#include <yarp/dev/MapGrid2D.h>
+#include <yarp/dev/IRangefinder2D.h>
+#include <yarp/dev/IJoypadController.h>
+
+
 #include <yarp/sig/all.h>
+#include <yarp/sig/Matrix.h>
+
+#include <yarp/math/Vec2D.h>
+#include <yarp/math/Quaternion.h>
 
 
 #include <float.h>
+
+#include "portablesBestOf.h"
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 
-
 /**************** Thread ***********************/
 class YarpClockProducer : public RFModule
 {
 private:
-    int     precision;
     int     counter;
+    int     numberOfRun;
+/*
+    int     precision;
     double  timeValue;
-    Stamp   stamp;
+*/
     bool    test2;
-    yarp::os::BufferedPort<yarp::os::Bottle> port;
-    yarp::os::  Port portSimple;
+    bool    plain;
+    Bottle  data, synchMsg;
+
+    Port    synchPort;
+    Port    portSimple;
+    BufferedPort<Bottle> portBuff;
+
+    PortablesBestOf  envelopes;
 
 public:
 
     YarpClockProducer(bool system=true)
     {
         yTrace();
+
         test2 = false;
+        plain = true;
         counter = 0;
-        port.open("/timeStamp_Producer");
-//         portSimple.open("/envelopeTest_1");
+        envelopes.bottle.clear();
+        data.clear();
+        numberOfRun = 10;
     }
 
     double getPeriod()
     {
-        return 0.05;
+        return 0.001;
     }
+
 
     bool configure(yarp::os::ResourceFinder &rf)
     {
         yTrace();
+/*
         counter   = 0;
         precision = 100000;
         timeValue = (double)counter / precision;
-        yWarning(":  %d  tv: %0.10f", counter, timeValue);
-        yarp::os::Time::delay(1);
+*/
+        synchPort.open(envProducer_SynchPort_name);
 
-        yInfo() << "FLT_DIG is     " << FLT_DIG;
-        yInfo() << "DBL_DIG is     " << DBL_DIG;
-        yInfo() << "DBL_MAX_EXP is " << DBL_MAX_EXP;
-        yInfo() << "DBL_MAX is     " << DBL_MAX;
+        if(rf.check("buff"))
+            plain = false;
 
-//         yInfo("Count:          %%(DBL_DIG)*e                         %%.*(DBL_DIG)g                    %%*.20g                      %%*.(DBL_DIG)f \n");
+        if(plain)
+            portSimple.open(envProducer_DataPort_name);
+        else
+            portBuff.open(envProducer_DataPort_name);
+
+        envelopes.size = rf.check("size", Value(10)).asInt();
+        numberOfRun    = rf.check("run",  Value(10)).asInt();
+
+        yInfo() << "Running with size " << envelopes.size;
+        yInfo() << "Number of runs    " << numberOfRun;
+
+        envelopes.initializeStuff();
+        while(!yarp::os::Network::isConnected(envProducer_SynchPort_name, envConsumer_SynchPort_name ))
+            Time::delay(1);
+
+
+        synchMsg.clear();
+        synchMsg.addInt(numberOfRun);
+        synchPort.write(synchMsg);
 
         return true;
     }
@@ -81,84 +123,93 @@ public:
 
     bool sendEnvelope()
     {
-        Bottle envelope;
-        envelope.clear();
-        envelope.addInt(counter);
-        envelope.addString("SET_ENVELOPE");
+        Bottle reply;
+        double tic, toc, taaaac;
+        double timeEnv = yarp::os::Time::now();
 
-        Bottle &data = port.prepare();
         data.clear();
-        data.addString("This is the data");
+        data.addString("DATA");
+        data.addInt(counter);
+        data.addDouble(timeEnv);
 
-        port.setEnvelope(envelope);
-        port.write();
+        for(int i=0; i<envelopes.roba.size(); i++)
+        {
+            auto &elem = envelopes.roba[i];
+            std::cout << "\n---------------------------" << std::endl;
+            synchMsg.clear();
+            synchMsg.addString(std::get<1>(elem));
+            synchPort.write(synchMsg, reply);
+
+            // Advertize which type of envelope we are sending
+            std::cout << "Sending env of type " << std::get<1>(elem) << std::endl;
+
+            if(plain)
+            {
+                tic = Time::now();
+                portSimple.setEnvelope(*(std::get<0>(elem)));
+                toc = Time::now();
+                portSimple.write(*(std::get<0>(elem)));
+                taaaac = Time::now();
+            }
+            else
+            {
+                Bottle &dataBuff = portBuff.prepare();
+                dataBuff.clear();
+                dataBuff = data;
+
+                tic = Time::now();
+                portBuff.setEnvelope(*(std::get<0>(elem)) );
+                toc = Time::now();
+                portBuff.write();
+                taaaac = Time::now();
+            }
+//             yInfo() << "Wrote data " << data.toString();
+
+            std::get<3>(elem).setEnv += toc - tic;
+            std::get<3>(elem).read   += taaaac - toc;
+            std::get<3>(elem).tot    += taaaac - tic;
+
+//             yInfo() << "setEnvelope elapsed time " << std::get<3>(elem).setEnv << " write " << std::get<3>(elem).read;
+//             printf("Type, %15s,  setEnv, %12.9f,  read, %12.9f,  tot, %12.9f\n", std::get<1>(envelopes.roba[i]).c_str(), std::get<3>(envelopes.roba[i]).setEnv, std::get<3>(envelopes.roba[i]).read, std::get<3>(envelopes.roba[i]).tot);
+
+            double wait = 0.1;
+            Time::delay(wait);
+        }
+        if(counter %100 == 0)
+            Time::delay(2);
     }
 
     bool updateModule()
     {
-
+        std::cout << "\n\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n" << std::endl;
         sendEnvelope();
         counter++;
-        return true;
 
-        Bottle envelope;
-        envelope.clear();
-        envelope.addInt(counter);
-        envelope.addString("Envelope");
-
-        Bottle &b = port.prepare();
-        b.clear();
-        b.addString("This is the data");
-
-        if(!test2)
-        {
-            port.setEnvelope(envelope);
-            port.write();
-
-            yInfo("-------------------------------------------------");
-            yInfo("%%f %-25f \t\t%%*f %*f \t\t%%*f %.*f", timeValue, DBL_DIG, timeValue, DBL_DIG, timeValue);
-            yInfo("%%e %-25e \t\t%%*e %*e \t\t%%*e %.*e", timeValue, DBL_DIG, timeValue, DBL_DIG, timeValue);
-            yInfo("%%g %-25g \t\t%%*g %*g \t\t%%*g %.*g", timeValue, DBL_DIG, timeValue, DBL_DIG, timeValue);
-            yInfo("%d:   %e   %30.*g   %30.*g   %30.*f ", counter, timeValue, DBL_DIG, timeValue, 20, timeValue, DBL_DIG, timeValue);
-
-            if(counter > 30)
-            {
-                test2       = true;
-                counter     = 0;
-                timeValue   = 10e55;
-            }
-        }
+        if(counter < numberOfRun)
+            return true;
         else
         {
-            b.addInt(counter);
-            timeValue /=10;
-            Bottle b;
-            b.addString("ENVELOPE");
-            stamp.update(timeValue);
-            port.setEnvelope(b);
-            port.write();
-            if(counter > 30)
+            // Print report
+            Timings report;
+            for(auto i = 0; i< envelopes.roba.size(); i++)
             {
-                test2       = false;
-                counter     = 0;
-                timeValue   = 10e55;
+                report = std::get<3>(envelopes.roba[i]);
+                printf("Type, %15s,  setEnv, %12.9f,  write, %12.9f,  tot, %12.9f\n", std::get<1>(envelopes.roba[i]).c_str(), report.setEnv/counter, report.write/counter, report.tot/counter);
             }
-//             yInfo("%d:   %e  %.*e   %#.*g   %30.*g   %30.*f ", counter, timeValue, DBL_DIG, timeValue, DBL_DIG, timeValue, 20, timeValue, DBL_DIG, timeValue);
+
+            return false;
         }
-
-
-//         Port portSimple
-//         Bottle b2;
-//         b2.addInt(counter);
-//         portSimple.setEnvelope(stamp);
-//         portSimple.write(b2);
-
-        return true;
     }
 
     bool interruptModule()
     {
         yTrace();
+        if(plain)
+            portSimple.interrupt();
+        else
+            portBuff.interrupt();
+
+        synchPort.close();
         return true;
     }
 };
