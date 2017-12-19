@@ -8,11 +8,17 @@
 # Add all subdirectory for different test cases
 #
 
-add_subdirectory(libYARP_dev)
-add_subdirectory(libYARP_OS)
-add_subdirectory(devices)
-add_subdirectory(integration)
+if(RTF_FOUND)
+    add_subdirectory(libYARP_dev)
+    add_subdirectory(libYARP_OS)
+    add_subdirectory(devices)
+    add_subdirectory(integration)
 
-if(ENABLE_BROKEN_TESTS)
-    add_subdirectory(broken)
-endif(ENABLE_BROKEN_TESTS)
+    if(ENABLE_BROKEN_TESTS)
+        add_subdirectory(broken)
+    endif(ENABLE_BROKEN_TESTS)
+
+else()
+    message("RTF not found, disabling RTF tests")
+
+endif()

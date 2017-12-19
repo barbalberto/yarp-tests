@@ -5,9 +5,9 @@
 #  Copy Policy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 #
 
-
 cmake_minimum_required(VERSION 2.8.9)
 project(yarp-tests)
+set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
 
 set (CMAKE_CXX_STANDARD 11)
 
@@ -20,7 +20,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 # find a version of RTF higher then 1.0.1
 # and with yarp support enabled
-find_package(RTF 1.2 REQUIRED)
+find_package(RTF 1.3.3 COMPONENTS DLL REQUIRED)
 
 # set the output plugin directory to collect all the shared libraries
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins)
@@ -33,7 +33,7 @@ option(ENABLE_BROKEN_TESTS   "Turn on to compile known broken tests" OFF)
 
 
 # Build main tests
-# add_subdirectory(src)
+add_subdirectory(src)
 add_subdirectory(noRTF)
 
 # Build examples: skeleton of tipical YARP test to be used when writing new tests
