@@ -15,10 +15,10 @@ include_directories(${CMAKE_SOURCE_DIR}
                     ${YARP_INCLUDE_DIRS}
                     ${YARP_HELPERS_INCLUDE_DIR})
 
-add_executable       (envelopePublisher   envelopePublisher.cpp)
-add_executable       (envelopeReader      envelopeReader.cpp)
+add_executable       (envelopeProducer    envelopeProducer.cpp)
+add_executable       (envelopeConsumer    envelopeConsumer.cpp)
 
-target_link_libraries(envelopePublisher   ${YARP_LIBRARIES})
-target_link_libraries(envelopeReader      ${YARP_LIBRARIES})
+target_link_libraries(envelopeProducer    ${YARP_LIBRARIES})
+target_link_libraries(envelopeConsumer    ${YARP_LIBRARIES})
 
 
