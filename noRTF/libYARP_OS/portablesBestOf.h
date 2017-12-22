@@ -85,17 +85,39 @@ public:
         roba.push_back(std::make_tuple(&v2,          "Vector2D"   , &PortablesBestOf::compareVectors2D        , Timings(), false));
         roba.push_back(std::make_tuple(&map,         "Map"        , &PortablesBestOf::compareMapGrid2D        , Timings(), false));
         roba.push_back(std::make_tuple(&managedBite, "ManagBites" , &PortablesBestOf::compareBites            , Timings(), false));
-        roba.push_back(std::make_tuple(&pc,          "PortCommand", &PortablesBestOf::comparePortCommands     , Timings(), false));
         roba.push_back(std::make_tuple(&pipi,        "Pair"       , &PortablesBestOf::comparePiPi             , Timings(), false));
         roba.push_back(std::make_tuple(&vect,        "Vector"     , &PortablesBestOf::compareVectorsOfInt     , Timings(), false));
-//         roba.push_back(std::make_tuple(&sisi,        "Sound"      , &PortablesBestOf::compareSounds           , Timings(), false));
+        roba.push_back(std::make_tuple(&sisi,        "Sound"      , &PortablesBestOf::compareSounds           , Timings(), false));
+//         roba.push_back(std::make_tuple(&pc,          "PortCommand", &PortablesBestOf::comparePortCommands     , Timings(), false));
 
+    }
+
+    void zeroStuff()
+    {
+        vect.clear();
+        image.zero();
+        mat.zero();
+        bottle.clear();
+        prop.clear();
+        quat.x() = 0;
+        quat.y() = 0;
+        quat.z() = 0;
+        quat.w() = 0;
+
+        v2.x = 0;
+        v2.y = 0;
+
+        pc.ch = '\0';
+        pc.str = "\0";
+
+        managedBite.clear();
+        pipi.head.clear();
+        pipi.body.clear();
     }
 
     void initializeStuff()
     {
-        allocateStuff();
-
+        zeroStuff();
         if(size < 10)
             size = 10;
 
@@ -105,7 +127,6 @@ public:
             bottle.addDouble(2.0);
         }
         mat.resize(size, size);
-        mat.zero();
         mat[2][0] = 5;
 
         // initialize all types with some data.
@@ -123,7 +144,6 @@ public:
         sisi.setSafe(5,2,0);
 
         image.resize(size,size);
-        image.zero();
         image.safePixel(0,0) = yarp::sig::PixelRgb(1,2,3);
         image.safePixel(4,1) = yarp::sig::PixelRgb(4,5,6);
         pc.ch = '5';
@@ -171,7 +191,7 @@ public:
         if(verbose) std::cout << typeid(*ref).name() << '\n';
         yarp::os::Bottle * a = dynamic_cast<yarp::os::Bottle *>(ref);
         yarp::os::Bottle * b = dynamic_cast<yarp::os::Bottle *>(test);
-        return *a==*b;
+        return ((*a)==(*b));
     }
 
     bool compareStamps(yarp::os::Portable * ref, yarp::os::Portable *test)
@@ -314,12 +334,21 @@ public:
             printf("A b %d  B b %d\n", ab, bb);
         }
 
-        if( (a->width() == b->width()) && (a->height() == b->height()) )
-            if( a->pixel(0,0).r == b->pixel(0,0).r &&
-                a->pixel(0,0).g == b->pixel(0,0).g &&
-                a->pixel(0,0).b == b->pixel(0,0).b)
+        if( //a->width() == b->width()            &&
+            //a->height() == b->height()          &&
+            ar == br  &&
+            ag == bg  &&
+            ab == bb)
                 si;
-            altrimenti no;
+        altrimenti no;
+
+
+        if( a->width() == b->width()            &&
+            a->height() == b->height()          &&
+            a->pixel(0,0).r == b->pixel(0,0).r  &&
+            a->pixel(0,0).g == b->pixel(0,0).g  &&
+            a->pixel(0,0).b == b->pixel(0,0).b)
+                si;
         altrimenti no;
     }
 
