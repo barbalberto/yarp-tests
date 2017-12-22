@@ -24,4 +24,5 @@ target_link_libraries(envelopeProducer    ${YARP_LIBRARIES})
 target_link_libraries(envelopeConsumer    ${YARP_LIBRARIES})
 target_link_libraries(wtf                 ${YARP_LIBRARIES})
 
-
+file(COPY           runConsumer.sh runProducers.sh
+     DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
