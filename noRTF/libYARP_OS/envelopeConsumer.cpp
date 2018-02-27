@@ -214,6 +214,7 @@ public:
 
 //             yInfo() << "\nTiming: for read " << toc-tic << " for getEnvelope " << taaaac -toc;
         }
+        return true;
     }
 
     bool updateModule()
@@ -335,7 +336,7 @@ public:
 int main(int argc, char *argv[])
 {
     // initialize yarp with system clock
-    yarp::os::Network yarp(/*YARP_CLOCK_SYSTEM*/);
+    yarp::os::Network yarp/*(YARP_CLOCK_SYSTEM)*/;
     if(!yarp::os::Network::checkNetwork())
         return -1;
 

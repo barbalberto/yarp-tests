@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <algorithm>
+#include <iostream>
 
 #include <yarp/os/PortablePair.h>
 #include <yarp/os/impl/PortCommand.h>  // funzionera??
