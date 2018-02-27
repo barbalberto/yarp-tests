@@ -8,3 +8,7 @@
 # add_subdirectory(Issue_1303)
 add_subdirectory(libYARP_OS)
 add_subdirectory(libYARP_dev)
+
+if(PCL_FOUND)
+  add_subdirectory(libYARP_sig)
+endif()
