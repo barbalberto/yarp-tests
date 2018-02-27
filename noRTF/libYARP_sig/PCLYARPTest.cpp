@@ -1,8 +1,11 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/LogStream.h>
-#include <yarp/sig/PointCloud.hpp>
+#include <yarp/sig/PointCloud.h>
 #include <pcl/io/pcd_io.h>
 #include <iostream>
+#include <yarp/pcl/Pcl.h>
+
+using namespace yarp::sig;
 
 
 int main (int argc, char** argv)
@@ -21,9 +24,7 @@ int main (int argc, char** argv)
 
     yarp::sig::PointCloud<XYZ_RGBA_DATA> yarpCloud;
 
-    yInfo()<<"L'header e'....."<<sizeof(cloud.header);
-    //yarpCloud.fromExternalPC((char*) &cloud.points.at(0), PCL_POINT_XYZ_RGBA, 100, 1, cloud.is_dense);
-    yarpCloud.fromExternalPC((char*) &cloud(0,0), PCL_POINT_XYZ_RGBA, 100, 1, cloud.is_dense);
+    yarpCloud = yarp::pcl::fromPCL<XYZ_RGBA_DATA, pcl::PointXYZRGBA>(cloud);
     bool ok = true;
     for (int i=0;i<cloud.size();i++)
     {
@@ -46,31 +47,25 @@ int main (int argc, char** argv)
 
     pcl::PointCloud<pcl::PointXYZRGBA> cloud2;
 
-    if (yarpCloud.toPCL(cloud2.points, cloud2.width, cloud2.height))
+    cloud2 = yarp::pcl::toPCL<pcl::PointXYZRGBA,XYZ_RGBA_DATA>(yarpCloud);
+
+    ok = true;
+    for (int i=0; i<cloud2.size(); i++)
     {
-        ok = true;
-        yInfo()<<"Copy successfull";
-        for (int i=0; i<cloud2.size(); i++)
-        {
-            ok &= cloud2.points.at(i).x == i;
-            ok &= cloud2.points.at(i).y == i + 1;
-            ok &= cloud2.points.at(i).z == i + 2;
-            ok &= cloud2.points.at(i).r == 'r';
-            ok &= cloud2.points.at(i).g == 'g';
-            ok &= cloud2.points.at(i).b == 'b';
-        }
-        if (ok)
-        {
-            std::cout<<"ToPcl:Everything works"<<std::endl;
-        }
-        else
-        {
-            std::cout<<"ToPcl:Nothing works"<<std::endl;
-        }
+        ok &= cloud2.points.at(i).x == i;
+        ok &= cloud2.points.at(i).y == i + 1;
+        ok &= cloud2.points.at(i).z == i + 2;
+        ok &= cloud2.points.at(i).r == 'r';
+        ok &= cloud2.points.at(i).g == 'g';
+        ok &= cloud2.points.at(i).b == 'b';
+    }
+    if (ok)
+    {
+        std::cout<<"ToPcl:Everything works"<<std::endl;
     }
     else
     {
-        yError()<<"Copy failed";
+        std::cout<<"ToPcl:Nothing works"<<std::endl;
     }
 
     return 0;
