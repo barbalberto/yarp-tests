@@ -6,7 +6,7 @@
 # Replace "yarpy" with whatever your executable should be called.
 
 cmake_minimum_required(VERSION 3.5)
-project(PCLYARPTest)
+project(PC_YARP_test)
 
 # Find YARP.  Point the YARP_DIR environment variable at your build.
 find_package(YARP REQUIRED)
@@ -32,10 +32,12 @@ endforeach(header_file ${folder_header})
 include_directories(${PCL_INCLUDE_DIRS} )
 link_directories(${PCL_LIBRARY_DIRS} )
 
-# Set up our main executable.
-if(folder_source)
-  add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
-  target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${PCL_LIBRARIES})
-else()
-  message(FATAL_ERROR "No source code files found. Please add something")
-endif()
+# Fix some PCL bug related to Ubuntu
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+
+# Set up executables.
+add_executable(PCLYARPTest PCLYARPTest.cpp)
+add_executable(PCDYARPTest PCDYARPTest.cpp)
+target_link_libraries(PCLYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(PCDYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES})
+
