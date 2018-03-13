@@ -18,11 +18,15 @@ include_directories(${CMAKE_SOURCE_DIR}
 add_executable       (envelopeProducer    envelopeProducer.cpp)
 add_executable       (envelopeConsumer    envelopeConsumer.cpp)
 add_executable       (wtf                 wtf.cpp)
+add_executable       (openPort1    openPort1.cpp)
+add_executable       (openPort2    openPort2.cpp)
 
 
 target_link_libraries(envelopeProducer    ${YARP_LIBRARIES})
 target_link_libraries(envelopeConsumer    ${YARP_LIBRARIES})
 target_link_libraries(wtf                 ${YARP_LIBRARIES})
+target_link_libraries(openPort1    ${YARP_LIBRARIES})
+target_link_libraries(openPort2    ${YARP_LIBRARIES})
 
 file(COPY           runConsumer.sh runProducers.sh
      DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
