@@ -13,7 +13,7 @@ int
 main (int argc, char** argv)
 {
     // test save
-    yarp::sig::PointCloud<yarp::sig::XYZ_RGBA_DATA> test;
+    yarp::sig::PointCloud<yarp::sig::XYZRGBAData> test;
     int width  = 32;
     int height = 25;
     test.resize(width, height);
@@ -30,7 +30,7 @@ main (int argc, char** argv)
     }
 
     const string filename("yarp_test_pcd.pcd");
-    int result = yarp::pcl::savePCD< yarp::sig::XYZ_RGBA_DATA, pcl::PointXYZRGBA >(filename, test);
+    int result = yarp::pcl::savePCD< yarp::sig::XYZRGBAData, pcl::PointXYZRGBA >(filename, test);
 
     if (result != 0)
     {
@@ -42,8 +42,8 @@ main (int argc, char** argv)
         cout << "Save point cloud to PCD works." << endl;
     }
 
-    yarp::sig::PointCloud<yarp::sig::XYZ_RGBA_DATA> testFromFile;
-    result = yarp::pcl::loadPCD< pcl::PointXYZRGBA, yarp::sig::XYZ_RGBA_DATA >(filename, testFromFile);
+    yarp::sig::PointCloud<yarp::sig::XYZRGBAData> testFromFile;
+    result = yarp::pcl::loadPCD< pcl::PointXYZRGBA, yarp::sig::XYZRGBAData >(filename, testFromFile);
     if (result != 0)
     {
         cerr << "Unable to load the point cloud from the PCD file" << endl;
