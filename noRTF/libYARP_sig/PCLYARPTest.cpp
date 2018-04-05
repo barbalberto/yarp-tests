@@ -22,9 +22,9 @@ int main (int argc, char** argv)
         cloud.points.at(i).b = 'b';
     }
 
-    yarp::sig::PointCloud<XYZRGBAData> yarpCloud;
+    yarp::sig::PointCloud<DataXYZRGBA> yarpCloud;
 
-    bool ok = yarp::pcl::fromPCL<pcl::PointXYZRGBA, XYZRGBAData>(cloud, yarpCloud);
+    bool ok = yarp::pcl::fromPCL<pcl::PointXYZRGBA, DataXYZRGBA>(cloud, yarpCloud);
     for (int i=0;i<cloud.size();i++)
     {
         ok &= yarpCloud(i).x == i;
@@ -46,7 +46,7 @@ int main (int argc, char** argv)
 
     pcl::PointCloud<pcl::PointXYZRGBA> cloud2;
 
-    ok = yarp::pcl::toPCL<XYZRGBAData, pcl::PointXYZRGBA>(yarpCloud, cloud2);
+    ok = yarp::pcl::toPCL<DataXYZRGBA, pcl::PointXYZRGBA>(yarpCloud, cloud2);
 
     for (int i=0; i<cloud2.size(); i++)
     {
