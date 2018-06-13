@@ -11,7 +11,7 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )
 
 set (CMAKE_CXX_STANDARD 11)
 
-find_package(YARP REQUIRED)
+find_package(YARP COMPONENTS OS dev pcl math REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${RTF_INCLUDE_DIRS}

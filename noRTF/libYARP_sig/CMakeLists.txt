@@ -38,6 +38,6 @@ list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 # Set up executables.
 add_executable(PCLYARPTest PCLYARPTest.cpp)
 add_executable(PCDYARPTest PCDYARPTest.cpp)
-target_link_libraries(PCLYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(PCDYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(PCLYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES} YARP::YARP_pcl)
+target_link_libraries(PCDYARPTest ${YARP_LIBRARIES} ${PCL_LIBRARIES} YARP::YARP_pcl)
 
